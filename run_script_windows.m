@@ -1,0 +1,274 @@
+clear
+%% Need to download before running code
+%SLIC Code - Download the SLIC codes from http://ivrl.epfl.ch/files/content/sites/ivrg/files/supplementary_material/RK_SLICsuperpixels/SLIC_mex.zip
+%LIBSVM - Make sure to have the libsvm library downloaded and extracted in the folder called Codes. https://www.csie.ntu.edu.tw/~cjlin/libsvm/ or https://www.csie.ntu.edu.tw/~cjlin/libsvm/#matlab
+
+%% Add Directories and Folders and Subfolders
+pre_directory = '\keilholz-lab\Hyunkoo\ImageProcessingProject\'; %'\\Client\G$\ImageProcessingProject\'; 
+cd(pre_directory)
+addpath(genpath('libsvm-3.20'))
+cd(strcat(pre_directory,'libsvm-3.20\matlab\'))
+%make %make allows matlab to run Mex files (c code)
+cd(pre_directory)
+addpath(genpath('SLIC_mex')) 
+%opengl('save','hardware')
+addpath(genpath(strcat(pre_directory,'OriginalData')))
+cd(pre_directory)
+
+%% Set Project Name and Parameters
+superpixel = 1; 
+project_label = '_PC3_Superpixel_Trial1'; %Project Trials
+Num_PCA = 3; %Number of PCA to Analyze 
+Num_Superpixel = 1000; %Number of Superpixels Ex) Num_Superpixel = 1000
+Project = 'Results_PCA_SLIC_SVM_Superpixel'; %Project Folder Name
+Results_Dir = strcat(pre_directory,'Results'); %Name Results folders for all results
+Superpixel_Constraint = 200; %Superpixel size constraint. Large values makes the superpixel more confined. Ex) Superpixel_Constraint = 100
+Figures = 1; %Set Figures = 1 if you want to observe figures during the code
+Name_All = {'888', '889', '890', '891', '892', '893', '894', '895', '896', '897', '898'}; %Mice Numbers
+w = 450:2:880; %Wavelength Region of Analysis
+Downsample = 5;
+
+%% Create Results Folder
+Results_Folder = strcat(Results_Dir,'\',datestr(now, 'mmm-dd-yyyy'),project_label);
+Check = exist(Results_Folder);
+if Check == 0
+    mkdir(Results_Folder)
+end
+addpath(genpath(strcat(pre_directory,'Results')))
+
+%% Create Folders
+for i = 1:length(Name_All)
+  %% Create Processed Images Folder to store images
+    Results_Individual_Folder = strcat(pre_directory,'ProcessedData\',Name_All{i},'\',Project,'\',datestr(now, 'mmm-dd-yyyy'),project_label);
+    Check = exist(Results_Individual_Folder);
+    if Check == 0
+         mkdir(Results_Individual_Folder)
+    end
+end
+
+%% Feature Extraction and Superpixel Segmentaion
+startFeature = tic ;
+Feature1_All = {};
+Feature2_All = {};
+Group_All = {};
+Image_xsize = {};
+Image_ysize = {};
+Superpixel_size_All = {};
+Pause = 0;
+Superpixel_sd = {};
+Superpixel_Indx = {};
+PCA_latent = {};
+x_size_DS = {};
+y_size_DS = {};
+z_size_DS = {};
+for i = 1:length(Name_All)
+    %% Raw data, White, Dark, and Ground Truth data names
+    Image_Name = strcat('im_',Name_All{i},'.mat');
+    White_Name = strcat('white_',Name_All{i},'.mat');
+    Dark_Name = strcat('dark_',Name_All{i},'.mat');
+    Truth_Name = strcat('tumor_mask_',Name_All{i},'.tif');
+    
+    %% Create Processed Images Folder to store images
+    Results_Individual_Folder = strcat(pre_directory,'ProcessedData\',Name_All{i},'\',Project,'\',datestr(now, 'mmm-dd-yyyy'),project_label);
+%     Check = exist(Results_Individual_Folder);
+%     if Check == 0
+%          mkdir(Results_Individual_Folder)
+%     end
+    
+    %% Read Image and Calibrate
+    [Reflectance_Cal, Mice_Num, Truth]  = function_calibrate(Truth_Name,Image_Name,White_Name,Dark_Name, Results_Individual_Folder, w, Figures);
+    %[Reflectance_Cal_PCA_Image, latent, Mice_Num, Truth] = function_PCA(Truth_Name,Image_Name,White_Name,Dark_Name, Results_Folder, w, Figures);
+    
+     if superpixel == 1 
+   
+        %% Apply PCA 
+        [Reflectance_Cal_PCA_Image, latent] = function_PCA_only(Reflectance_Cal, w);
+        PCA_latent{i} = latent;
+      
+        figure; imagesc(Reflectance_Cal_PCA_Image(:,:,3))     
+      
+        %% Apply Superpixel
+        [Feature, Group, Superpixel_Cal_Vector, Superpixel_Cal_Matrix, Superpixel_Truth_Vector, Superpixel_Truth_Matrix, sup_cal_image]=function_superpixel(Mice_Num, Num_Superpixel, Reflectance_Cal_PCA_Image, Truth, Results_Individual_Folder, w, Pause, Superpixel_Constraint, Figures, Num_PCA);
+        Superpixel_Indx{i} = sup_cal_image;
+        Superpixel_Cal_Matrix_All{i} = Superpixel_Cal_Matrix;
+        Superpixel_Truth_Matrix_All{i} = Superpixel_Truth_Matrix;
+   
+        
+    elseif superpixel == 0
+        
+        %% Without Superpixel
+        [Feature, Group, DS_x, DS_y, DS_z] = function_wo_superpixel(Reflectance_Cal, Truth, Num_PCA, Downsample);
+         x_size_DS{i} = DS_x;
+        y_size_DS{i} = DS_y;
+        z_size_DS{i} = DS_z;
+     
+     end
+    
+    %% Standardize the Features
+    Feature_Standardize = zeros(size(Feature,1),size(Feature,2));
+    for j = 1:size(Feature,2)
+        Feature_Standardize(:,j) = Feature_Stand(Feature(:,j));
+    end
+    
+    %% Store Features and Ground Truths in Cells
+    Feature_All{i} = Feature_Standardize;
+    Group_All{i} = Group;
+   
+    
+    
+    close all
+end
+EndFeature = toc(startFeature) 
+save(fullfile(Results_Folder,strcat('Rat11_Extraction_Finished_Variables.mat')))
+
+Figures = 1;
+%% Run Support Vector Machine
+StartSVM = tic 
+Sensitivity = {};
+Specificity = {};
+Classified_NonTumors = {};
+Truth_NonTumors = {};
+Classified_Tumors = {};
+Truth_Tumors = {};
+Total_Pixels_Classification = {};
+Total_Pixels_Truth = {};
+predict_label = {};
+accuracy = {};
+dec_values = {};
+CrossVal_Matrix = [];
+Tumor_Predicted = {};
+for i = 1:length(Name_All)
+    close all
+    
+    %% Feature Testing Data
+    Feature_Test = Feature_All{i};
+    
+    
+    %% Feature Training Dataset
+    Feature_temp = Feature_All;
+    Feature_temp{i} = [];
+    %Feature_temp(~cellfun('isempty',Feature_temp)); %leave-one-out method 
+    Feature_Train = Feature_temp;
+    Feature = Combine_Cell_Vector(Feature_Train);
+
+    
+    %% Superpixel Ground Truth Testing Data
+    Group_Test = Group_All{i};
+    
+    %% Group Training Dataset
+    Group_temp = Group_All;
+    Group_temp{i} = [];
+    %Group_temp(~cellfun('isempty',Group_temp)); %leave-one-out method 
+    Group_Train = Group_temp;
+    Group = Combine_Cell_Vector(Group_Train); 
+    
+    
+    Name = Name_All{i}; %Mice of Interest for Testing Data  
+    training_label = Group; 
+    training_data = Feature;
+    test_label = Group_Test;
+    test_data = Feature_Test;
+   
+
+    %% Train SVM Model
+    C = sum(find(Group == 1)); %Set C Parameter for 
+    C_Tumor = C/sum(find(Group == 1)); %C Parameter for Tumor Class
+    C_Normal = C/sum(find(Group == 0)); %C Parameter for Normal Tissue Class
+    model_rbf = svmtrain(training_label,training_data, sprintf('-t 2 -c 1 -w1 %g -w0 %g', C_Tumor, C_Normal'))
+
+
+    %% Test SVM Classifier 
+    [predict_label_L, accuracy_L, dec_values_L] = svmpredict(test_label, test_data, model_rbf);
+    predict_label{i} = predict_label_L;
+    accuracy{i} = accuracy_L;
+    dec_values{i} = dec_values_L;
+    
+    %% Post Processing and Performance Evaluation
+    Results_Individual_Directory  = strcat(pre_directory,'Results\',datestr(now, 'mmm-dd-yyyy'),project_label);
+    
+%     if superpixel == 1
+%     [Predicted, Sensitivity_Ind,Specificity_Ind, Classified_NonTumors, Truth_NonTumors, Classified_Tumors, Truth_Tumors, Total_Pixels_Classification, Total_Pixels_Truth] = Postprocessing(Name, predict_label_L, Group_Test, Results_Folder, Results_Individual_Directory, Superpixel_Indx{i}, Figures);
+%     elseif superpixel == 0
+    
+    
+          [Predicted, Sensitivity_Ind, Specificity_Ind] = Postprocessing_wo_superpixel(Name, predict_label_L, Group_Test, x_size_DS{i}, y_size_DS{i}, Results_Folder, Results_Individual_Directory, Figures);
+%     end
+%     
+     Tumor_Predicted{i} = Predicted;
+    Sensitivity{i} = Sensitivity_Ind;
+     Specificity{i} = Specificity_Ind;
+    
+%save(fullfile(Results_Folder,strcat('Rat11_Current_Variables.mat')))
+
+end
+EndSVM = toc(StartSVM)
+save(fullfile(Results_Folder,strcat('Rat11_Final_Variables.mat')))
+
+
+%% Compile Results in Excel Table
+Mice = Name_All;
+T = table(Mice', Sensitivity', Specificity', 'VariableNames', {'Mice','Sensitivity', 'Specificity'});
+mean(cell2mat(Sensitivity))
+mean(cell2mat(Specificity))
+%writetable(T,'Mice_NoSuperpixel.txt');
+writetable(T, fullfile(Results_Folder,strcat('Mice12_LeaveOneOut', datestr(now, 'mmm-dd-yyyy'),'.xls')))
+
+
+Mice = Name_All;
+G = table(cell2mat(PCA_latent));
+writetable(G, fullfile(Results_Folder,strcat('PCA_Mice12_LeaveOneOut', datestr(now, 'mmm-dd-yyyy'),'.xls')))
+PCA_Components = cell2mat(PCA_latent);
+PCA_Components_Sum = cumsum(PCA_Components(1:5,:),2);
+PCA_Components_Cumulative = [];
+for i = 1:length(Name_All)
+    CumSum_PCA = sum(PCA_Components,1);
+PCA_Components_Cumulative(:,i) = cumsum(PCA_Components(:,i))./CumSum_PCA(i);
+end
+
+K = table(PCA_Components_Cumulative);
+writetable(K, fullfile(Results_Folder,strcat('PCA_Latent_Mice12_LeaveOneOut', datestr(now, 'mmm-dd-yyyy'),'.xls')))
+PCA_Components_Cumulative(1:10,:);
+sum(PCA_Components(1:2,:),1);
+
+
+
+%% Plotting the Average Sensitivity and Specificity
+Avg_Specificity =[];
+Avg_Sensitivity= [];
+for i = 2:Num_PCA
+Avg_Sensitivity(i-1) = mean(cell2mat(Sensitivity));
+Avg_Specificity(i-1) = mean(cell2mat(Specificity));
+end
+
+model_series = [Avg_Sensitivity', Avg_Specificity'];
+
+if Num_PCA == 2;
+    figure;    
+    h = bar([1 2], [NaN NaN; model_series]);    
+    xlabel('Number of Principal Components','fontsize',13)
+ylabel('Performance','fontsize',13)
+set(gca,'FontSize',13);
+h_legend = legend('Average Sensitivity','Average Specificity','Location','northoutside');
+axis([1.5 2.5 0 1])
+set(h(1), 'FaceColor','r')
+set(h(2), 'FaceColor','b')
+set(h_legend,'FontSize',13);
+print(gcf, fullfile(Results_Folder,strcat('Components_Plot', '_', datestr(now, 'mmm-dd-yyyy'))), '-djpeg') 
+%print -dpng Components_Plot
+disp('Completed Project')
+elseif Num_PCA > 2
+    figure; 
+    h = bar([2:Num_PCA], model_series);
+%errorbar([2 3 4 5],model_series,model_error,'.')
+xlabel('Number of Principal Components','fontsize',13)
+ylabel('Performance','fontsize',13)
+set(gca,'FontSize',13);
+h_legend = legend('Average Sensitivity','Average Specificity','Location','northoutside');
+axis([1 Num_PCA+1 0 1])
+set(h(1), 'FaceColor','r')
+set(h(2), 'FaceColor','b')
+set(h_legend,'FontSize',13);
+print(gcf, fullfile(Results_Folder,strcat('Components_Plot', '_', datestr(now, 'mmm-dd-yyyy'))), '-djpeg') 
+%print -dpng Components_Plot
+disp('Completed Project')
+end
