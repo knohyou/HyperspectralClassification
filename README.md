@@ -15,6 +15,7 @@ Link: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5028206/
 ## Install 
 Need to download files and libraries 
 SLIC Code: Download the SLIC codes from http://ivrl.epfl.ch/files/content/sites/ivrg/files/supplementary_material/RK_SLICsuperpixels/SLIC_mex.zip
+
 LIBSVM: Make sure to have the libsvm library downloaded and extracted in the folder called Codes. https://www.csie.ntu.edu.tw/~cjlin/libsvm/ or https://www.csie.ntu.edu.tw/~cjlin/libsvm/#matlab
 
 ## Run Code
@@ -24,6 +25,13 @@ run_script.m
 ```
 
 ## Output
+
+<img src="https://github.com/knohyou/HyperspectralClassification/tree/master/Images/TrainingTruth.jpg">
+
+<img src="https://github.com/knohyou/HyperspectralClassification/tree/master/Images/TableResults.jpg">
+
+
+## 
 functions
 function_PCA_SVM.m
 Combine_Cell_Vector.m
