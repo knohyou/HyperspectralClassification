@@ -53,9 +53,3 @@ An illustration of the superpixel segmented regions, predicted tumor, and ground
 <p align="center"><img src="Images/TableResults.JPG" width=100%></p>
 After running the code, the output of the classifier should match up to the results shown in the table. 
 Sensitivity and Specificity were used as performance metrics for the classification.
-## 
-functions
-function_PCA_SVM.m
-Combine_Cell_Vector.m
-Feature_Stand.m
-Superpixel_SLIC.m
