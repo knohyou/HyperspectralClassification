@@ -9,7 +9,7 @@ Link: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5028206/
 
 ## Basic Overview
 
-<p align="center"><img width = 95% src=""></p>
+<p align="center"><img width = 95% src=Images/FlowChart.JPG""></p>
 
 
 ## Install 
@@ -18,19 +18,40 @@ SLIC Code: Download the SLIC codes from http://ivrl.epfl.ch/files/content/sites/
 
 LIBSVM: Make sure to have the libsvm library downloaded and extracted in the folder called Codes. https://www.csie.ntu.edu.tw/~cjlin/libsvm/ or https://www.csie.ntu.edu.tw/~cjlin/libsvm/#matlab
 
+## Set Path and Parameters
+```
+superpixel = 0;                                   % 1=Include superpixel 0=Not include superpixel
+project_label = 'Trial1';                         % Project Trials
+Num_PCA = 2;                                      % Number of PCA to Analyze 
+Num_Superpixel = 500;                             % Number of Superpixels Ex) Num_Superpixel = 1000
+Project = 'Results_PCA_SLIC';                     % Results Folder Name
+Results_Dir = strcat(pre_directory,'Results');    % Name Results folders for all results
+Superpixel_Constraint = 200;                      % Superpixel size constraint. 
+                                                  % Large values makes the superpixel more confined. 
+                                                  % Ex) Superpixel_Constraint = 100
+Figures = 1;                                      % Set Figures = 1 if you want to observe figures during code
+Name_All = {'888', '889', '890', ...
+            '891', '892', '893', ...
+            '894', '895', '896', ...
+            '897', '898'};                        % Mice Numbers
+w = 450:2:880;                                    % Wavelength Region of Analysis
+Downsample = 2;                                   % Downsampling Factor for Images
+```
+
 ## Run Code
 Need to Compile the C file using ```mex slicmex.c```before running the main script below
 ```
 run_script.m 
 ```
 
-## Output
+## Output - Images
 
 <p align="center"><img src="Images/TrainingTruth.JPG" width=50%></p>
 An illustration of the superpixel segmented regions, predicted tumor, and ground truth images for four different mice.
 
+## Output - Classification Results
 
-<p align="center"><img src="Images/TableResults.JPG" width=70%></p>
+<p align="center"><img src="Images/TableResults.JPG" width=100%></p>
 After running the code, the output of the classifier should match up to the results shown in the table. 
 
 ## 
@@ -39,8 +60,3 @@ function_PCA_SVM.m
 Combine_Cell_Vector.m
 Feature_Stand.m
 Superpixel_SLIC.m
-
-
-GUI Files
-gui_interface_v2.m
-gui_interface_v2.fig
