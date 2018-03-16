@@ -9,12 +9,11 @@ Link: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5028206/
 
 ## Basic Overview
 
-<p align="center"><img width = 95% src=Images/FlowChart.JPG""></p>
-
+<p align="center"><img src="Images/FlowChart.JPG" width = 95%></p>
+An overview of the algorithm is shown in Figure 1. Reflectance hyperspectral images were collected over multiple wavelengths. Pre-processing steps involved reflectance calibration and curvature correction. The pre-processed image cube underwent principal component analysis. Superpixel segmentation was applied to 2 principal component images. SVM training and classification were applied on the principal component images (Feature 1 and Feature 2). After classification with SVM, the largest connected region classified as tumor was chosen to be the main tumor region. This final classified image was compared to the ground truth image to calculate sensitivity and specificity.
 
 ## Install 
-Need to download files and libraries 
-SLIC Code: Download the SLIC codes from http://ivrl.epfl.ch/files/content/sites/ivrg/files/supplementary_material/RK_SLICsuperpixels/SLIC_mex.zip
+Need to download files and libraries SLIC Code from http://ivrl.epfl.ch/files/content/sites/ivrg/files/supplementary_material/RK_SLICsuperpixels/SLIC_mex.zip
 
 LIBSVM: Make sure to have the libsvm library downloaded and extracted in the folder called Codes. https://www.csie.ntu.edu.tw/~cjlin/libsvm/ or https://www.csie.ntu.edu.tw/~cjlin/libsvm/#matlab
 
@@ -49,11 +48,11 @@ run_script.m
 <p align="center"><img src="Images/TrainingTruth.JPG" width=50%></p>
 An illustration of the superpixel segmented regions, predicted tumor, and ground truth images for four different mice.
 
-## Output - Classification Results
+## Output - Evaluate Classification Results
 
 <p align="center"><img src="Images/TableResults.JPG" width=100%></p>
 After running the code, the output of the classifier should match up to the results shown in the table. 
-
+Sensitivity and Specificity were used as performance metrics for the classification.
 ## 
 functions
 function_PCA_SVM.m
