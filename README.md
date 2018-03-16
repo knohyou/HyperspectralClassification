@@ -27,9 +27,11 @@ run_script.m
 ## Output
 
 <p align="center"><img src="Images/TrainingTruth.JPG" width=50%></p>
+An illustration of the superpixel segmented regions, predicted tumor, and ground truth images for four different mice.
 
-<img src="Images/TableResults.JPG">
 
+<p align="center"><img src="Images/TableResults.JPG" width=50%></p>
+After running the code, the output of the classifier should match up to the results shown in the table. 
 
 ## 
 functions
