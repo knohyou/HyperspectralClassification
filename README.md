@@ -26,9 +26,9 @@ run_script.m
 
 ## Output
 
-<img src="https://github.com/knohyou/HyperspectralClassification/tree/master/Images/TrainingTruth.jpg">
+<img src="https://github.com/knohyou/HyperspectralClassification/tree/master/Images/TrainingTruth.JPG">
 
-<img src="https://github.com/knohyou/HyperspectralClassification/tree/master/Images/TableResults.jpg">
+<img src="https://github.com/knohyou/HyperspectralClassification/tree/master/Images/TableResults.JPG">
 
 
 ## 
