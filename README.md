@@ -14,10 +14,11 @@ Link: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5028206/
 
 ## Install 
 Need to download files and libraries 
-%SLIC Code - Download the SLIC codes from http://ivrl.epfl.ch/files/content/sites/ivrg/files/supplementary_material/RK_SLICsuperpixels/SLIC_mex.zip
-%LIBSVM - Make sure to have the libsvm library downloaded and extracted in the folder called Codes. https://www.csie.ntu.edu.tw/~cjlin/libsvm/ or https://www.csie.ntu.edu.tw/~cjlin/libsvm/#matlab
+SLIC Code: Download the SLIC codes from http://ivrl.epfl.ch/files/content/sites/ivrg/files/supplementary_material/RK_SLICsuperpixels/SLIC_mex.zip
+LIBSVM: Make sure to have the libsvm library downloaded and extracted in the folder called Codes. https://www.csie.ntu.edu.tw/~cjlin/libsvm/ or https://www.csie.ntu.edu.tw/~cjlin/libsvm/#matlab
 
 ## Run Code
+Need to Compile the C file using ```mex slicmex.c```before running the main script below
 ```
 run_script.m 
 ```
